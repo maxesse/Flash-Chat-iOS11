@@ -7,9 +7,11 @@
 //
 
 import UIKit
+import Firebase
 
+class ChatViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
-class ChatViewController: UIViewController {
+    
     
     // Declare instance variables here
 
@@ -24,9 +26,11 @@ class ChatViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.navigationItem.setHidesBackButton(true, animated:true);
         
         //TODO: Set yourself as the delegate and datasource here:
-        
+        messageTableView.delegate = self
+        messageTableView.dataSource = self
         
         
         //TODO: Set yourself as the delegate of the text field here:
@@ -45,7 +49,13 @@ class ChatViewController: UIViewController {
     ///////////////////////////////////////////
     
     //MARK: - TableView DataSource Methods
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        <#code#>
+    }
     
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        <#code#>
+    }
     
     
     //TODO: Declare cellForRowAtIndexPath here:
@@ -108,7 +118,14 @@ class ChatViewController: UIViewController {
         
         //TODO: Log out the user and send them back to WelcomeViewController
         
-        
+        do {
+            try Auth.auth().signOut()
+            
+            navigationController?.popToRootViewController(animated: true)
+        }
+        catch {
+            print("Error, there was a problem signing out.")
+        }
     }
     
 
