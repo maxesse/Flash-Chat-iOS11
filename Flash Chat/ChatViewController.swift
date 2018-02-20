@@ -8,6 +8,7 @@
 
 import UIKit
 import Firebase
+import ChameleonFramework
 
 class ChatViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
 
@@ -46,6 +47,8 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         messageTableView.register(UINib(nibName: "MessageCell", bundle: nil), forCellReuseIdentifier: "customMessageCell")
         configureTableView()
         retrieveMessages()
+        
+        messageTableView.separatorStyle = .none
     }
 
     ///////////////////////////////////////////
@@ -60,6 +63,17 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         cell.messageBody.text = messageArray[indexPath.row].messageBody
         cell.senderUsername.text = messageArray[indexPath.row].sender
         cell.avatarImageView.image = UIImage(named: "egg")
+        
+        if cell.senderUsername.text == Auth.auth().currentUser?.email as String! {
+            //Messages we sent ourselves
+            
+            cell.avatarImageView.backgroundColor = UIColor.flatMint()
+            cell.messageBackground.backgroundColor = UIColor.flatSkyBlue()
+            
+        } else {
+            cell.avatarImageView.backgroundColor = UIColor.flatWatermelon()
+            cell.messageBackground.backgroundColor = UIColor.flatGray()
+        }
         
         return cell
     }
@@ -95,6 +109,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: .UIKeyboardWillShow, object: nil)
+        scrollToLastRow()
     }
     
     //Get keyboard height and animation when keyboard shows up
@@ -109,6 +124,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
                 heightConstraint.constant = keyboardHeight + 50
             }
             view.layoutIfNeeded()
+            scrollToLastRow()
         }
     }
     
@@ -121,6 +137,12 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     
+    func scrollToLastRow() {
+        if (self.messageArray.count - 1) >= 0 {
+            let indexPath = IndexPath(row: self.messageArray.count - 1, section: 0)
+            self.messageTableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
+        }
+    }
     ///////////////////////////////////////////
     
     
@@ -131,6 +153,15 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     
     @IBAction func sendPressed(_ sender: AnyObject) {
+        sendMessages()
+        
+    }
+    
+    @IBAction func enterKeyPressed(_ sender: Any) {
+        sendMessages()
+    }
+    
+    func sendMessages() {
         
         messageTextfield.endEditing(true)
         //TODO: Send the message to Firebase and save it in our database
@@ -154,9 +185,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
                 self.messageTextfield.text = ""
             }
         }
-        
     }
-    
     //TODO: Create the retrieveMessages method here:
     
     func retrieveMessages() {
@@ -175,6 +204,8 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
             self.messageArray.append(message)
             self.configureTableView()
             self.messageTableView.reloadData()
+            
+            self.scrollToLastRow()
         }
     }
     
